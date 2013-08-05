@@ -1,0 +1,32 @@
+--- vim.orig/src/misc1.c	2013-08-04 19:01:43.765328583 +0800
++++ vim/src/misc1.c	2013-08-06 00:34:25.134473285 +0800
+@@ -4225,6 +4225,29 @@
+     }
+ 
+     /*
++     * Using local data directory
++     */
++#define LOCAL_DATA_DIR "data/vim/"VIM_VERSION_NODOT
++     if (p == NULL)
++     {
++        char buf[1024];
++        ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
++        if (len > 0 && len < sizeof(buf))
++        {
++            buf[len] = '\0';
++            char* pos = strrchr(buf, '/');
++            if (pos != NULL && pos > buf)
++            {
++                size_t prefix_len = pos - buf + 1;
++                p = malloc(prefix_len + strlen(LOCAL_DATA_DIR) + 1);
++                strncpy(p, buf, prefix_len);
++                strncpy(p + prefix_len, LOCAL_DATA_DIR, strlen(LOCAL_DATA_DIR));
++                p[prefix_len + strlen(LOCAL_DATA_DIR)] = '\0';
++                *mustfree = TRUE;
++            }
++        }
++     }
++    /*
+      * When expanding $VIM or $VIMRUNTIME fails, try using:
+      * - the directory name from 'helpfile' (unless it contains '$')
+      * - the executable name from argv[0]
